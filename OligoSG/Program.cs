@@ -116,18 +116,13 @@ namespace sgRNA
 
 				sw.WriteLine("");
 				sw.WriteLine("");
-				sw.WriteLine("HTSエクセル入力用 ==============================");
+				sw.WriteLine("======== ユーロフィン発注およびスプレッドシート入力用 ========");
 				foreach (KeyValuePair<string, string> kv in results)
 				{
-					// エクセル入力用の塩基配列は大文字に変換
+					// 塩基配列は大文字に変換
 					sw.WriteLine("{0}" + "\t" + "{1}", kv.Key, ti.ToUpper(kv.Value));
 				}
-				sw.WriteLine("SnapGene入力用 (FASTA形式)========================");
-				foreach (KeyValuePair<string, string> kv in results)
-				{
-					sw.WriteLine(">" + kv.Key);
-					sw.WriteLine(kv.Value);
-				}
+				sw.WriteLine("======== 以下余白 ========");
 			}
 
 			Console.WriteLine("  全ての処理が完了しました。");

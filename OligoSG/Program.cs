@@ -20,8 +20,14 @@ namespace sgRNA
 			Console.WriteLine("    Version 3.1");
 			Console.WriteLine("======================================================");
 			Console.WriteLine("  入力ファイル書式：");
-			Console.WriteLine("    「標的配列名称+タブ+標的配列（5' -> 3'）+改行」");
-			Console.WriteLine("    リストの上下や行間に余計な空白がないように");
+			Console.WriteLine("    「ベクター名称+改行」");
+			Console.WriteLine("    「標的配列名称1+タブ+標的配列1（5' -> 3'）+改行」");
+			Console.WriteLine("    「標的配列名称2+タブ+標的配列2（5' -> 3'）+改行」");
+			Console.WriteLine("    「ベクター名称+改行」");
+			Console.WriteLine("    「…（以下同じ）」");
+			Console.WriteLine("    各項目はタブで区切る。singleベクターの場合には名称2、配列2は省略可");
+			Console.WriteLine("    対応singleベクター:pX335, pBabe Puro");
+			Console.WriteLine("    対応dualベクター:pX459dual D10A");
 			Console.WriteLine("======================================================");
 			Console.WriteLine("  出力ファイル：");
 			Console.WriteLine("  ・発注用オリゴDNAリスト（入力ファイルに追記）");
@@ -37,7 +43,7 @@ namespace sgRNA
 			string[] filePath = Environment.GetCommandLineArgs();
 			int startIndex = 0;
 			int numberOfFiles = 0;
-			for (int i = 0; i < filePath.Length; i++)
+			for (var i = 0; i < filePath.Length; i++)
 			{
 				int len = filePath[i].Length;
 				if (filePath[i].Substring(len - 3, 3) != "exe" && filePath[i].Substring(len - 3, 3) != "dll")
@@ -71,22 +77,37 @@ namespace sgRNA
 
 					while (parser.EndOfData == false)
 					{
-						string[] data = parser.ReadFields();
+						string[] vector = parser.ReadFields();
+						int singleOrDual = 0;
 
 						// RESULTSヘッダーがある場合はエラー
-						if (data[0] == "RESULTS")
+						if (vector[0] == "RESULTS")
                         {
 							Console.WriteLine("  {0}は処理済みのファイルのようです。", filePath[startIndex]);
 							Console.WriteLine("  終了するには何かキーを押してください。");
 							Console.ReadKey();
 							Environment.Exit(0);
 						}
-						for (int i = 0; i < (data.Length / 2); i++)
+						else if (vector[0] == "pX335" || vector[0] == "pBabe Puro")
+                        {
+							singleOrDual = 1;
+						}
+						else if (vector[0] == "pX459dual D10A")
+                        {
+							singleOrDual = 2;
+                        }
+						else
+                        {
+							Console.WriteLine("  ベクター名称が不正です。");
+							Console.WriteLine("  終了するには何かキーを押してください。");
+							Console.ReadKey();
+							Environment.Exit(0);
+						}
+
+						for (var i = 0; i < singleOrDual; i++)
 						{
-							string key, value;
-							key = data[i * 2];
-							value = data[i * 2 + 1];
-							listNameSeq.Add(key, value);
+							string[] data = parser.ReadFields();
+							listNameSeq.Add(data[0], data[1]);
 						}
 					}
 				}
@@ -199,6 +220,8 @@ namespace sgRNA
 					Environment.Exit(0);
 				}
 			}
+
+			// ベクターマップの作成（未実装）
 
 			Console.WriteLine("  全ての処理が完了しました。");
 			Console.WriteLine("  終了するには何かキーを押してください。");
@@ -386,8 +409,54 @@ namespace sgRNA
         }
 	}
 
-	class SGFile
+	class SnapGeneFile
     {
+		/// <summary>
+		/// セグメントID
+		/// </summary>
+		Byte SegmentID { get; set; }
 
+		/// <summary>
+		/// セグメント長
+		/// </summary>
+		Int32 SegmentLength { get; set; }
+
+		/// <summary>
+		/// セグメント内容
+		/// </summary>
+		String SegmentContent { get; set; }
+
+		/// <summary>
+		/// AdditionalSequenceProperties（セグメント#8）
+		/// </summary>
+		[System.Xml.Serialization.XmlElement("AdditionalSequenceProperties")]
+		SGAddSeqProp AdditionalSequenceProperties { get; set; }
     }
+
+	class SGAddSeqProp
+    {
+		/// <summary>
+		/// 上流の突出塩基数（正の値は5'突出、負の値は3'突出、平滑末端はゼロ）
+		/// </summary>
+		[System.Xml.Serialization.XmlElement("UpstreamStickiness")]
+		Int32 UpstreamStickiness { get; set; }
+
+		/// <summary>
+		/// 下流の突出塩基数（正の値は5'突出、負の値は3'突出、平滑末端はゼロ）
+		/// </summary>
+		[System.Xml.Serialization.XmlElement("DownstreamStickiness")]
+		Int32 DownstreamStickiness { get; set; }
+
+		/// <summary>
+		/// 上流の修飾
+		/// </summary>
+		[System.Xml.Serialization.XmlElement("UpstreamModification")]
+		String UpstreamModification { get; set; }
+
+		/// <summary>
+		/// 下流の修飾
+		/// </summary>
+		[System.Xml.Serialization.XmlElement("DownstreamModification")]
+		String DownstreamModification { get; set; }
+	}
 }

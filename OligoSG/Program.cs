@@ -17,7 +17,7 @@ namespace sgRNA
 			Console.WriteLine("======================================================");
 			Console.WriteLine("  CRISPR/Cas9用ツール");
 			Console.WriteLine("    Copyright (c) 2018-2021 Genta Ito");
-			Console.WriteLine("    Version 3.0");
+			Console.WriteLine("    Version 3.1");
 			Console.WriteLine("======================================================");
 			Console.WriteLine("  入力ファイル書式：");
 			Console.WriteLine("    「標的配列名称+タブ+標的配列（5' -> 3'）+改行」");

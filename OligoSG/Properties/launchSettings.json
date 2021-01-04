@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OligoSG": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Codes\\OligoSG\\OligoSGtest.txt\""
+    }
+  }
+}

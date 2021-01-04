@@ -1,0 +1,93 @@
+﻿[基本構造]
+LittleEndian
+
+Segment identifier				8 bits
+	00	sequence
+	01	compressed DNA
+	02	?
+	03	restriction enzymes
+	05	primers (XML format)
+	06	notes (XML format)
+	07	history tree (XML format)
+	08	additional sequence properties (XML format)
+	09	header (length always 0x0E bytes)
+	0A(10)	features
+	0B(11)	history node
+	0D(13)	? (length always 0x0159 bytes)
+	0E(14)	? (XML format)
+	1C(28)	? (XML format)
+
+Segment length (bytes in HEX)	32 bits
+Segment contents
+
+Segment 08 XML
+<AdditionalSequenceProperties>
+	<UpstreamStickiness>
+		0
+	</UpstreamStickiness>
+	<DownstreamStickiness>
+		0
+	</DownstreamStickiness>
+	<UpstreamModification>
+		Unmodified
+	</UpstreamModification>
+	<DownstreamModification>
+		Unmodified
+	</DownstreamModification>
+</AdditionalSequenceProperties>
+
+0~F
+	常に「090000000E536E617047656E65000100」
+	環状ベクターでも直鎖配列でもアニーリングしたオリゴでも同一
+	ASCIIでは「HT-NUL-NUL-NUL-SO-S-n-a-p-G-e-n-e-NUL-SOH-NUL」
+		0がHT(Horizontal Tabulation)なので水平タブ
+		1~3が空白
+		4がシフトアウト
+		5~CがSnapGene
+		Dが空白
+		EがSOH(Start Of Heading)
+		Fが空白
+
+10~1F
+	10は0x0C,0x0D,0x0Eなど
+	11は空白
+	12は0x0B,0x0C,0x0Fなど
+	E~12はランダムなスペーサー？「01000C000C」など
+
+	13~17は配列のバイト数（n2）
+	18は配列の種類？
+		02: 2本鎖直鎖状DNA（平滑末端）
+		1E: 2本鎖直鎖状DNA（粘着末端）
+		1F: 2本鎖環状DNA
+	18から18+n2-1までが配列セグメント
+
+第一セグメント0~17を「ヘッダーセグメント」、
+第二セグメント18から18+n2-1を「配列セグメント」とする
+
+配列セグメントの次のバイト(18+n2)は常に0x02
+その次の4バイト(18+n2+1~18+n2+4)が次の第三セグメントのバイト数（n3）
+
+第三セグメントは18+n2+5~18+n2+5+n3-1
+	先頭は常に0x01
+	第三セグメントは何を意味する？
+	n2は最短でも1500バイト程度はありそう
+
+第三セグメントの次のバイト(18+n2+5+n3)は常に0x03
+その次の4バイト(18+n2+5+n3+1~18+n2+5+n3+4)が次の第四セグメントのバイト数（n4）
+
+第四セグメントは18+n2+5+n3+5~18+n2+5+n3+5+n4-1
+	先頭は常に0x01
+第四セグメントは選択されている制限酵素の「ソース」を列挙？
+
+第四セグメントの次のバイト(18+n2+5+n3+5+n4)は0x07か0x08
+0x07であれば次のセグメントは「履歴セグメント」
+0x08であれば次のセグメントは「補足セグメント」
+その次の4バイト(18+n2+5+n3+5+n4+1~18+n2+5+n3+5+n4+4)が次のセグメントのバイト数（n5)
+
+「履歴セグメント」がある場合、次のセグメントは0x08から始まる「補足セグメント」
+	「履歴セグメント」は18+n2+5+n3+5+n4+5~18+n2+5+n3+5+n4+5+n5-1
+	次のバイト(18+n2+5+n3+5+n4+5+n5)は0x08
+	その次の4バイト(18+n2+5+n3+5+n4+5+n5+1~18+n2+5+n3+5+n4+5+n5+4)が
+	  次の「補足セグメント」のバイト数(n6)
+
+---

@@ -153,7 +153,7 @@ namespace sgRNA
 							Console.WriteLine("  ベクターマップを作成しました：{0}", path);
 						}
 						// BbsI/BsmBI両方あるベクターの場合
-						else if (vector[0] == "pX459dual D10A")
+						else if (vector[0] == "pX459dual D10A" || vector[0] == "pX459dual EGFP D10A")
                         {
 							// 標的配列名称と標的配列を二組取得
 							string[] data1 = parser.ReadFields();
